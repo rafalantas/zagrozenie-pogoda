@@ -69,7 +69,7 @@ def check_warnings():
     for ostrzezenie in filtered_warnings:
         if ostrzezenie['ID'] not in sent_ids:
             content = (
-                f"⚠️ **Nowe ostrzeżenie meteorologiczne** (TERYT: {TERYT_CODE})\n"
+                f"⚠️ **Nowe ostrzeżenie meteorologiczne**\n"
                 f"**Zdarzenie:** {ostrzezenie['Zdarzenie']}\n"
                 f"**Stopień zagrożenia:** {ostrzezenie['Stopien zagrozenia']}\n"
                 f"**Prawdopodobieństwo:** {ostrzezenie['Prawdopodobienstwo']}%\n"

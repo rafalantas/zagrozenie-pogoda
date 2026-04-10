@@ -1,7 +1,6 @@
 import requests
 import os
 import time
-import schedule
 import logging
 
 logging.basicConfig(
@@ -13,9 +12,11 @@ logger = logging.getLogger(__name__)
 WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 if not WEBHOOK_URL:
     raise RuntimeError("Brak zmiennej środowiskowej DISCORD_WEBHOOK_URL!")
+
 IMGW_URL = "https://danepubliczne.imgw.pl/api/data/warningsmeteo"
 TERYT_CODE = os.environ.get("TERYT_CODE", "2005")
 SENT_IDS_FILE = os.environ.get("SENT_IDS_FILE", "/data/sent_ids.txt")
+INTERVAL_SECONDS = 30 * 60  # 30 minut
 
 
 def load_sent_ids():
@@ -78,9 +79,8 @@ def check_warnings():
                 f"**Opis:** {ostrzezenie['Opis']}\n"
                 f"**Komentarz:** {ostrzezenie['Komentarz']}"
             )
-            data = {"content": content}
             try:
-                discord_response = requests.post(WEBHOOK_URL, json=data, timeout=10)
+                discord_response = requests.post(WEBHOOK_URL, json={"content": content}, timeout=10)
                 if discord_response.status_code == 204:
                     save_sent_id(ostrzezenie['ID'])
                     new_count += 1
@@ -97,12 +97,8 @@ def check_warnings():
 
 
 if __name__ == "__main__":
-    logger.info("Bot IMGW uruchomiony. Pierwsze sprawdzenie za chwilę...")
-    check_warnings()
-
-    schedule.every(30).minutes.do(check_warnings)
-    logger.info("Harmonogram ustawiony: co 30 minut.")
-
+    logger.info(f"Bot IMGW uruchomiony. Interwał: {INTERVAL_SECONDS // 60} minut.")
     while True:
-        schedule.run_pending()
-        time.sleep(60)
+        check_warnings()
+        logger.info(f"Następne sprawdzenie za {INTERVAL_SECONDS // 60} minut.")
+        time.sleep(INTERVAL_SECONDS)

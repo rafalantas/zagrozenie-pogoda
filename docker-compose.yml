@@ -1,0 +1,20 @@
+services:
+  imgw-bot:
+    build: .
+    image: imgw-discord-bot:latest
+    container_name: imgw-discord-bot
+    restart: unless-stopped
+    environment:
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+      - TERYT_CODE=2005
+      - SENT_IDS_FILE=/data/sent_ids.txt
+    volumes:
+      - imgw_data:/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  imgw_data:

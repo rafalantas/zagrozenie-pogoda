@@ -68,19 +68,36 @@ def check_warnings():
     new_count = 0
     for ostrzezenie in filtered_warnings:
         if ostrzezenie['ID'] not in sent_ids:
-            content = (
-                f"⚠️ **Nowe ostrzeżenie meteorologiczne**\n"
-                f"**Zdarzenie:** {ostrzezenie['Zdarzenie']}\n"
-                f"**Stopień zagrożenia:** {ostrzezenie['Stopien zagrozenia']}\n"
-                f"**Prawdopodobieństwo:** {ostrzezenie['Prawdopodobienstwo']}%\n"
-                f"**Obowiązuje od:** {ostrzezenie['Obowiazuje od']}\n"
-                f"**Obowiązuje do:** {ostrzezenie['Obowiazuje do']}\n"
-                f"**Opublikowano:** {ostrzezenie['Opublikowano']}\n"
-                f"**Opis:** {ostrzezenie['Opis']}\n"
-                f"**Komentarz:** {ostrzezenie['Komentarz']}"
-            )
+            stopien = ostrzezenie['Stopien zagrozenia']
+            COLORS = {1: 0xFFFF00, 2: 0xFF8C00, 3: 0xFF0000}
+            ICONS  = {1: "🟡", 2: "🟠", 3: "🔴"}
+            color = COLORS.get(int(stopien) if str(stopien).isdigit() else 0, 0x808080)
+            icon  = ICONS.get(int(stopien) if str(stopien).isdigit() else 0, "⚪")
+
+            komentarz = ostrzezenie['Komentarz']
+            if str(komentarz).strip().lower() in ('brak', 'brak.', '', 'none'):
+                komentarz = None
+
+            fields = [
+                {"name": "🌡️ Zdarzenie",         "value": ostrzezenie['Zdarzenie'],               "inline": True},
+                {"name": "📊 Stopień zagrożenia", "value": f"{icon} {stopien}",                    "inline": True},
+                {"name": "🎯 Prawdopodobieństwo", "value": f"{ostrzezenie['Prawdopodobienstwo']}%", "inline": True},
+                {"name": "🕐 Obowiązuje od",      "value": ostrzezenie['Obowiazuje od'],           "inline": True},
+                {"name": "🕑 Obowiązuje do",      "value": ostrzezenie['Obowiazuje do'],           "inline": True},
+                {"name": "📅 Opublikowano",        "value": ostrzezenie['Opublikowano'],            "inline": True},
+                {"name": "📝 Opis",                "value": ostrzezenie['Opis'],                   "inline": False},
+            ]
+            if komentarz:
+                fields.append({"name": "💬 Komentarz", "value": komentarz, "inline": False})
+
+            embed = {
+                "title": "⚠️ Nowe ostrzeżenie meteorologiczne",
+                "color": color,
+                "fields": fields,
+                "footer": {"text": "Źródło: IMGW-PIB"},
+            }
             try:
-                discord_response = requests.post(WEBHOOK_URL, json={"content": content}, timeout=10)
+                discord_response = requests.post(WEBHOOK_URL, json={"embeds": [embed]}, timeout=10)
                 if discord_response.status_code == 204:
                     save_sent_id(ostrzezenie['ID'])
                     new_count += 1

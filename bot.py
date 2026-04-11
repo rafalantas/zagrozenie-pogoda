@@ -94,7 +94,6 @@ def check_warnings():
                 "title": "⚠️ Nowe ostrzeżenie meteorologiczne",
                 "color": color,
                 "fields": fields,
-                "footer": {"text": "Źródło: IMGW-PIB"},
             }
             try:
                 discord_response = requests.post(WEBHOOK_URL, json={"embeds": [embed]}, timeout=10)

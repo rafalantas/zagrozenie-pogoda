@@ -1,7 +1,10 @@
 services:
   imgw-bot:
-    build: ghcr.io/rafalantas/zagrozenie-pogoda:latest
+    build:
+      context: .
+      dockerfile: dockerfile
     image: imgw-discord-bot:latest
+    pull_policy: never
     container_name: imgw-discord-bot
     restart: unless-stopped
     environment:
